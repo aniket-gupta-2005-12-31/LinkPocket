@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { NoteList } from "@/components/notes/note-list";
 import { AddCollectionDialog } from "@/components/collections/add-collection-dialog";
+import { useAuth } from "@/context/auth-context";
 
 export default function NotesPage() {
+  const { user, loading } = useAuth();
   const [notes, setNotes] = React.useState<Note[]>(mockNotes);
   const [collections, setCollections] = React.useState<Collection[]>(mockCollections);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -87,6 +89,10 @@ export default function NotesPage() {
       Add Note
     </Button>
   )
+
+  if (loading || !user) {
+    return null;
+  }
 
   return (
     <AppLayout

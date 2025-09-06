@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -11,8 +12,21 @@ import {
 } from "@/components/ui/sidebar";
 import { LinkPocketLogo } from "@/components/icons";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { LogOut, Search, User as UserIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -29,6 +43,24 @@ export function AppLayout({
   onSearchTermChange,
   headerActions,
 }: AppLayoutProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push("/login");
+  };
+
+  const getInitials = (email: string | null | undefined) => {
+    if (!email) return "U";
+    return email.substring(0, 2).toUpperCase();
+  };
+
+
+  if (!user) {
+    return null; // or a loading spinner
+  }
+
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar" collapsible="icon">
@@ -55,9 +87,30 @@ export function AppLayout({
               onChange={(e) => onSearchTermChange(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {headerActions}
             <ThemeToggle />
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="overflow-hidden rounded-full"
+                >
+                  <Avatar>
+                    <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
