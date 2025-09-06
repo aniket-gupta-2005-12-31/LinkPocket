@@ -34,47 +34,41 @@ export function MainSidebar({
       <SidebarGroup>
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/" passHref legacyBehavior>
-                <SidebarMenuButton
-                asChild
-                isActive={!isNotesPage && activeFilter === "all"}
-                tooltip="All Links"
-                >
-                <a>
-                    <Inbox />
-                    <span>All Links</span>
-                </a>
-                </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton
+              asChild
+              isActive={!isNotesPage && activeFilter === "all"}
+              tooltip="All Links"
+            >
+              <Link href="/">
+                <Inbox />
+                <span>All Links</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-             <Link href="/" passHref legacyBehavior>
-                <SidebarMenuButton
-                    asChild
-                    onClick={() => setActiveFilter("favorites")}
-                    isActive={!isNotesPage && activeFilter === "favorites"}
-                    tooltip="Favorites"
-                >
-                    <a>
-                        <Bookmark />
-                        <span>Favorites</span>
-                    </a>
-                </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton
+              asChild
+              onClick={() => setActiveFilter("favorites")}
+              isActive={!isNotesPage && activeFilter === "favorites"}
+              tooltip="Favorites"
+            >
+               <Link href="/">
+                <Bookmark />
+                <span>Favorites</span>
+               </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
            <SidebarMenuItem>
-            <Link href="/notes" passHref legacyBehavior>
-                <SidebarMenuButton
-                asChild
-                isActive={isNotesPage}
-                tooltip="Notes"
-                >
-                <a>
-                    <StickyNote />
-                    <span>Notes</span>
-                </a>
-                </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton
+              asChild
+              isActive={isNotesPage}
+              tooltip="Notes"
+            >
+              <Link href="/notes">
+                <StickyNote />
+                <span>Notes</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
@@ -86,19 +80,17 @@ export function MainSidebar({
         <SidebarMenu>
           {collections.map((collection) => (
             <SidebarMenuItem key={collection.id}>
-                <Link href="/" passHref legacyBehavior>
-                    <SidebarMenuButton
-                        asChild
-                        onClick={() => setActiveFilter(collection.id)}
-                        isActive={!isNotesPage && activeFilter === collection.id}
-                        tooltip={collection.name}
-                    >
-                        <a>
-                            <Folder />
-                            <span>{collection.name}</span>
-                        </a>
-                    </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                onClick={() => setActiveFilter(collection.id)}
+                isActive={!isNotesPage && activeFilter === collection.id}
+                tooltip={collection.name}
+              >
+                <Link href="/">
+                    <Folder />
+                    <span>{collection.name}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
