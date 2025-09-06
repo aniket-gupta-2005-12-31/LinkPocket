@@ -11,12 +11,10 @@ import { AddEditLinkSheet } from "@/components/links/add-edit-link-sheet";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddCollectionDialog } from "@/components/collections/add-collection-dialog";
-import { useAuth } from "@/context/auth-context";
 
 type Filter = "all" | "favorites" | string; // collectionId
 
 export default function Home() {
-  const { user, loading } = useAuth();
   const [links, setLinks] = React.useState<Link[]>(mockLinks);
   const [collections, setCollections] =
     React.useState<Collection[]>(mockCollections);
@@ -108,10 +106,6 @@ export default function Home() {
       Add Link
     </Button>
   )
-
-  if (loading || !user) {
-    return null;
-  }
 
   return (
     <AppLayout
