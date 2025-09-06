@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -9,6 +10,7 @@ import type { Link, Collection } from "@/lib/types";
 import { AddEditLinkSheet } from "@/components/links/add-edit-link-sheet";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { AddCollectionDialog } from "@/components/collections/add-collection-dialog";
 
 type Filter = "all" | "favorites" | string; // collectionId
 
@@ -20,6 +22,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = React.useState<Filter>("all");
   const [isSheetOpen, setSheetOpen] = React.useState(false);
   const [editingLink, setEditingLink] = React.useState<Link | null>(null);
+  const [isCollectionDialogOpen, setCollectionDialogOpen] = React.useState(false);
 
   const filteredLinks = React.useMemo(() => {
     let filtered = links;
@@ -87,6 +90,16 @@ export default function Home() {
     setSheetOpen(true);
   }
 
+   const handleAddCollection = (newCollectionData: Omit<Collection, "id" | "linkCount">) => {
+    const newCollection: Collection = {
+      ...newCollectionData,
+      id: (collections.length + 1).toString(),
+      linkCount: 0,
+    };
+    setCollections([...collections, newCollection]);
+    setCollectionDialogOpen(false);
+  };
+
   const headerActions = (
     <Button onClick={handleAddNew}>
       <Plus className="-ml-2 h-4 w-4" />
@@ -101,6 +114,7 @@ export default function Home() {
           collections={collections}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
+          onAddCollection={() => setCollectionDialogOpen(true)}
         />
       }
       searchTerm={searchTerm}
@@ -129,6 +143,11 @@ export default function Home() {
         }}
         collections={collections}
         link={editingLink}
+      />
+      <AddCollectionDialog
+        isOpen={isCollectionDialogOpen}
+        setIsOpen={setCollectionDialogOpen}
+        onSave={handleAddCollection}
       />
     </AppLayout>
   );

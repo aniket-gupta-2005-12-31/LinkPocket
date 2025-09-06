@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -451,11 +452,12 @@ SidebarGroupLabel.displayName = "SidebarGroupLabel"
 
 const SidebarGroupAction = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
+  React.ComponentProps<"button"> & { asChild?: boolean; tooltip?: string | React.ComponentProps<typeof TooltipContent> }
+>(({ className, asChild = false, tooltip, ...props }, ref) => {
   const Comp = asChild ? Slot : "button"
+  const { isMobile, state } = useSidebar()
 
-  return (
+  const button = (
     <Comp
       ref={ref}
       data-sidebar="group-action"
@@ -468,7 +470,29 @@ const SidebarGroupAction = React.forwardRef<
       )}
       {...props}
     />
-  )
+  );
+
+  if (!tooltip) {
+    return button;
+  }
+
+  if (typeof tooltip === 'string') {
+    tooltip = {
+      children: tooltip,
+    };
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent
+        side="right"
+        align="center"
+        hidden={state !== 'collapsed' || isMobile}
+        {...tooltip}
+      />
+    </Tooltip>
+  );
 })
 SidebarGroupAction.displayName = "SidebarGroupAction"
 

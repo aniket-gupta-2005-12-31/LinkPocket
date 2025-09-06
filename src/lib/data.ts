@@ -1,4 +1,5 @@
-import type { Link, Collection } from './types';
+
+import type { Link, Collection, Note } from './types';
 
 export const mockCollections: Collection[] = [
   { id: '1', name: 'Work', description: 'Links related to work projects', linkCount: 2 },
@@ -96,4 +97,28 @@ export const mockLinks: Link[] = [
     createdAt: '2023-10-19T19:00:00Z',
     updatedAt: '2023-10-19T19:00:00Z',
   },
+];
+
+export const mockNotes: Note[] = [
+    {
+        id: '1',
+        title: 'Meeting Notes 2023-10-27',
+        content: 'Discussed Q4 goals and project timelines. Key takeaways: focus on user engagement, complete feature X by end of November.',
+        createdAt: '2023-10-27T11:00:00Z',
+        updatedAt: '2023-10-27T11:30:00Z',
+    },
+    {
+        id: '2',
+        title: 'Brainstorming: New App Idea',
+        content: 'An app that helps users track their plant watering schedules. Features: push notifications, plant database, photo gallery.',
+        createdAt: '2023-10-26T15:00:00Z',
+        updatedAt: '2023-10-26T15:00:00Z',
+    },
+    {
+        id: '3',
+        title: 'Grocery List',
+        content: 'Milk, Eggs, Bread, Cheese, Apples, Bananas',
+        createdAt: '2023-10-28T08:00:00Z',
+        updatedAt: '2023-10-28T09:15:00Z',
+    },
 ];

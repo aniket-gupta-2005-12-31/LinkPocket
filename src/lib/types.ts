@@ -1,3 +1,4 @@
+
 export interface Link {
   id: string;
   title: string;
@@ -15,4 +16,12 @@ export interface Collection {
   name: string;
   description?: string;
   linkCount: number;
+}
+
+export interface Note {
+    id: string;
+    title: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
 }
