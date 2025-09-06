@@ -32,9 +32,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Loader } from "lucide-react";
 import type { Link, Collection } from "@/lib/types";
-import { getCollectionSuggestions } from "@/app/actions";
+import { getCollectionSuggestions, getLinkSummary } from "@/app/actions";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const linkSchema = z.object({
@@ -70,6 +70,7 @@ export function AddEditLinkSheet({
   const [tagInput, setTagInput] = React.useState("");
   const [suggestedCollections, setSuggestedCollections] = React.useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = React.useState(false);
+  const [isSummarizing, setIsSummarizing] = React.useState(false);
 
   const form = useForm<LinkFormData>({
     resolver: zodResolver(linkSchema),
@@ -168,6 +169,18 @@ export function AddEditLinkSheet({
     }
   }
 
+  const handleGenerateSummary = async () => {
+    const url = form.getValues('url');
+    if(url) {
+      setIsSummarizing(true);
+      const summary = await getLinkSummary(url);
+      if (summary) {
+        form.setValue('description', summary);
+      }
+      setIsSummarizing(false);
+    }
+  }
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent className="sm:max-w-lg w-full flex flex-col">
@@ -194,7 +207,7 @@ export function AddEditLinkSheet({
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
@@ -212,7 +225,17 @@ export function AddEditLinkSheet({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                    <div className="flex justify-between items-center">
+                        <FormLabel>Description</FormLabel>
+                        <Button type="button" variant="outline" size="sm" onClick={handleGenerateSummary} disabled={isSummarizing || !formData.url}>
+                            {isSummarizing ? (
+                                <Loader className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="w-4 h-4" />
+                            )}
+                            <span className="ml-2">Generate</span>
+                        </Button>
+                    </div>
                   <FormControl>
                     <Textarea
                       placeholder="A brief description of the link."

@@ -1,6 +1,7 @@
 'use server';
 
 import { suggestCollectionsForLink } from '@/ai/flows/suggest-collections-for-link';
+import { summarizeUrl } from '@/ai/flows/summarize-url';
 import type { Collection } from '@/lib/types';
 
 interface SuggestionInput {
@@ -34,4 +35,18 @@ export async function getCollectionSuggestions({
     // In a production app, you might want to handle this error more gracefully
     return [];
   }
+}
+
+export async function getLinkSummary(url: string): Promise<string> {
+    if (!url) {
+        return "";
+    }
+
+    try {
+        const response = await summarizeUrl({ url });
+        return response.summary;
+    } catch (error) {
+        console.error('Error getting link summary:', error);
+        return "";
+    }
 }
