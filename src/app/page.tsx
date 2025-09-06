@@ -99,6 +99,17 @@ export default function Home() {
     setCollections([...collections, newCollection]);
     setCollectionDialogOpen(false);
   };
+  
+  const handleAddNewCollection = (name: string, description?: string) => {
+    const newCollection: Collection = {
+      id: (collections.length + 1).toString(),
+      name,
+      description,
+      linkCount: 0,
+    };
+    setCollections(c => [...c, newCollection]);
+    return Promise.resolve(newCollection);
+  }
 
   const headerActions = (
     <Button onClick={handleAddNew}>
@@ -141,6 +152,7 @@ export default function Home() {
                 handleAddLink(data);
             }
         }}
+        onNewCollection={handleAddNewCollection}
         collections={collections}
         link={editingLink}
       />

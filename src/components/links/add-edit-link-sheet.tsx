@@ -32,10 +32,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Sparkles, Loader } from "lucide-react";
+import { X, Sparkles, Loader, PlusCircle } from "lucide-react";
 import type { Link, Collection } from "@/lib/types";
 import { getCollectionSuggestions, getLinkSummary } from "@/app/actions";
 import { useDebounce } from "@/hooks/use-debounce";
+import type { SuggestCollectionsForLinkOutput } from "@/ai/flows/suggest-collections-for-link";
+import { useToast } from "@/hooks/use-toast";
 
 const linkSchema = z.object({
   url: z.string().url({ message: "Please enter a valid URL." }),
@@ -49,12 +51,12 @@ const linkSchema = z.object({
 });
 
 type LinkFormData = z.infer<typeof linkSchema>;
-type SaveHandler = (data: Omit<Link, 'id' | 'createdAt' | 'updatedAt'>) => void;
 
 interface AddEditLinkSheetProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSave: SaveHandler;
+  onSave: (data: Omit<Link, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onNewCollection: (name: string) => Promise<Collection | undefined>;
   collections: Collection[];
   link: Link | null;
 }
@@ -63,14 +65,16 @@ export function AddEditLinkSheet({
   isOpen,
   setIsOpen,
   onSave,
+  onNewCollection,
   collections,
   link,
 }: AddEditLinkSheetProps) {
   const [currentTags, setCurrentTags] = React.useState<string[]>(link?.tags || []);
   const [tagInput, setTagInput] = React.useState("");
-  const [suggestedCollections, setSuggestedCollections] = React.useState<string[]>([]);
+  const [suggestions, setSuggestions] = React.useState<SuggestCollectionsForLinkOutput>({ suggestedExistingCollections: [], suggestedNewCollections: [] });
   const [isSuggesting, setIsSuggesting] = React.useState(false);
   const [isSummarizing, setIsSummarizing] = React.useState(false);
+  const { toast } = useToast();
 
   const form = useForm<LinkFormData>({
     resolver: zodResolver(linkSchema),
@@ -113,20 +117,20 @@ export function AddEditLinkSheet({
       });
       setCurrentTags([]);
     }
-    setSuggestedCollections([]);
+    setSuggestions({ suggestedExistingCollections: [], suggestedNewCollections: [] });
   }, [link, isOpen, form]);
 
   React.useEffect(() => {
       const fetchSuggestions = async () => {
           if (debouncedFormData.title || debouncedFormData.description || (debouncedFormData.tags && debouncedFormData.tags.length > 0)) {
               setIsSuggesting(true);
-              const suggestions = await getCollectionSuggestions({
+              const response = await getCollectionSuggestions({
                   title: debouncedFormData.title || '',
                   description: debouncedFormData.description || '',
                   tags: debouncedFormData.tags || [],
                   existingCollections: collections,
               });
-              setSuggestedCollections(suggestions);
+              setSuggestions(response);
               setIsSuggesting(false);
           }
       };
@@ -164,8 +168,20 @@ export function AddEditLinkSheet({
   const selectSuggestedCollection = (name: string) => {
     const collection = collections.find(c => c.name === name);
     if (collection) {
-        form.setValue('collectionId', collection.id);
-        setSuggestedCollections([]);
+        form.setValue('collectionId', collection.id, { shouldValidate: true });
+        setSuggestions(s => ({...s, suggestedExistingCollections: s.suggestedExistingCollections.filter(c => c !== name)}));
+    }
+  }
+
+  const createAndSelectCollection = async (name: string) => {
+    const newCollection = await onNewCollection(name);
+    if (newCollection) {
+        form.setValue('collectionId', newCollection.id, { shouldValidate: true });
+        setSuggestions(s => ({...s, suggestedNewCollections: s.suggestedNewCollections.filter(c => c !== name)}));
+        toast({
+            title: "Collection Created!",
+            description: `Successfully created and selected "${name}".`,
+        });
     }
   }
 
@@ -175,7 +191,7 @@ export function AddEditLinkSheet({
       setIsSummarizing(true);
       const summary = await getLinkSummary(url);
       if (summary) {
-        form.setValue('description', summary);
+        form.setValue('description', summary, { shouldValidate: true });
       }
       setIsSummarizing(false);
     }
@@ -271,15 +287,25 @@ export function AddEditLinkSheet({
                 </FormItem>
               )}
             />
-            {suggestedCollections.length > 0 && (
-                <div className="space-y-2">
+            {(suggestions.suggestedExistingCollections.length > 0 || suggestions.suggestedNewCollections.length > 0) && !link && (
+                <div className="space-y-3">
                     <FormLabel className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        AI Suggestions
+                        {isSuggesting ? (
+                            <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Sparkles className="w-4 h-4 text-primary" />
+                        )}
+                        <span>AI Suggestions</span>
                     </FormLabel>
                     <div className="flex flex-wrap gap-2">
-                        {suggestedCollections.map(name => (
-                            <Button key={name} type="button" variant="outline" size="sm" onClick={() => selectSuggestedCollection(name)}>
+                        {suggestions.suggestedExistingCollections.map(name => (
+                            <Button key={`exist-${name}`} type="button" variant="outline" size="sm" onClick={() => selectSuggestedCollection(name)}>
+                                {name}
+                            </Button>
+                        ))}
+                         {suggestions.suggestedNewCollections.map(name => (
+                            <Button key={`new-${name}`} type="button" variant="outline" size="sm" onClick={() => createAndSelectCollection(name)}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
                                 {name}
                             </Button>
                         ))}

@@ -1,6 +1,9 @@
 'use server';
 
-import { suggestCollectionsForLink } from '@/ai/flows/suggest-collections-for-link';
+import {
+  suggestCollectionsForLink,
+  type SuggestCollectionsForLinkOutput,
+} from '@/ai/flows/suggest-collections-for-link';
 import { summarizeUrl } from '@/ai/flows/summarize-url';
 import type { Collection } from '@/lib/types';
 
@@ -16,9 +19,9 @@ export async function getCollectionSuggestions({
   description,
   tags,
   existingCollections,
-}: SuggestionInput): Promise<string[]> {
+}: SuggestionInput): Promise<SuggestCollectionsForLinkOutput> {
   if (!title && !description && tags.length === 0) {
-    return [];
+    return { suggestedExistingCollections: [], suggestedNewCollections: [] };
   }
 
   try {
@@ -29,11 +32,11 @@ export async function getCollectionSuggestions({
       existingCollectionNames: existingCollections.map(c => c.name),
     });
     
-    return response.suggestedCollections;
+    return response;
   } catch (error) {
     console.error('Error getting collection suggestions:', error);
     // In a production app, you might want to handle this error more gracefully
-    return [];
+    return { suggestedExistingCollections: [], suggestedNewCollections: [] };
   }
 }
 
